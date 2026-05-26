@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, maximum-scale=1.0" />
+  <title>Digit Decoder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="icons/icons.png">
+  <link rel="apple-touch-icon" href="icons/icons.png">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-deep: #0a0c15;
+      --bg-surface: #10141f;
+      --card-bg: rgba(18, 24, 36, 0.96);
+      --border-glow: rgba(108, 92, 255, 0.3);
+      --primary: #7c5eff;
+      --primary-light: #9b82ff;
+      --secondary: #4fd1c9;
+      --accent-gold: #f5b042;
+      --text-light: #f1f3fa;
+      --text-muted: #a0a8c0;
+      --success: #4ade80;
+      --warning: #facc15;
+      --error: #f97373;
+    }
+
+    body {
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      background: radial-gradient(ellipse at 20% 30%, #0f1422, #05070e);
+      color: var(--text-light);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(14px);
+      border-radius: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 22px 38px -12px rgba(0, 0, 0, 0.55);
+      padding: 24px 22px;
+    }
+
+    .screen {
+      display: none;
+      animation: floatIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+    }
+
+    .active {
+      display: block;
+    }
+
+    @keyframes floatIn {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-hero {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .badge-glow {
+      background: linear-gradient(135deg, rgba(124, 94, 255, 0.25), rgba(79, 209, 201, 0.12));
+      border-radius: 40px;
+      padding: 7px 16px;
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.75px;
+      text-transform: uppercase;
+      color: var(--secondary);
+      border: 1px solid rgba(79, 209, 201, 0.35);
+      box-shadow: 0 0 18px rgba(79, 209, 201, 0.12);
+    }
+    
+    h1 {
+      font-size: 38px;
+      font-weight: 900;
+      line-height: 1.02;
+      background: linear-gradient(135deg, #ffffff, #c7b9ff, #9b82ff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 14px 0 10px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 12px rgba(124, 94, 255, 0.18);
+    }
+    
+    h2 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.16);
+    }
+    
+    h3 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.35px;
+    }
+    
+    h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 0.25px;
+    }
+    
+    .lead-text {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin: 8px auto;
+      line-height: 1.55;
+    }
+
+    button {
+      font-family: inherit;
+      font-weight: 600;
+      border: none;
+      border-radius: 60px;
+      padding: 16px 22px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      touch-action: manipulation;
+      width: 100%;
+    }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
+
+    .btn-primary {
+      background: linear-gradient(105deg, var(--primary), #6249e6);
+      color: white;
+      box-shadow: 0 7px 16px rgba(108, 76, 255, 0.32);
+    }
+    .btn-primary:active { background: linear-gradient(105deg, #6249e6, #4a35b0); }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.16); }
+    .btn-secondary:active { background: rgba(255, 255, 255, 0.12); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--secondary);
+      border: 1px solid rgba(79, 209, 201, 0.4);
+    }
+    .btn-ghost:hover { background: rgba(79, 209, 201, 0.14); color: #b5fff9; border-color: rgba(79, 209, 201, 0.7); }
+
+    .icon-circle {
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      border-radius: 60px;
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 20px;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .icon-circle:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-1px); }
+
+    .diff-card:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22); background: rgba(124, 94, 255, 0.1); }
+    .btn-primary:hover { filter: brightness(1.03); }
+    button:hover:not(:disabled) { filter: brightness(1.02); }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .flex-center {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .input-modern {
+      width: 100%;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 60px;
+      color: white;
+      font-size: 21px;
+      font-weight: 600;
+      transition: 0.2s;
+      text-align: center;
+      letter-spacing: 4px;
+    }
+    .input-modern:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(124, 94, 255, 0.25);
+    }
+
+    .diff-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .diff-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s;
+      cursor: pointer;
+      text-align: center;
+    }
+    .diff-card:active { transform: scale(0.98); background: rgba(124, 94, 255, 0.1); }
+    .diff-icon { font-size: 32px; margin-bottom: 6px; }
+    .diff-card p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .level-progress {
+      margin-top: 12px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 30px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .level-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 30px;
+      transition: width 0.3s ease;
+    }
+    .level-text {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .clue-panel {
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 20px;
+      padding: 16px;
+      margin: 12px 0;
+      border-left: 4px solid var(--secondary);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .history-scroll {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      padding: 4px 2px;
+      margin-top: 8px;
+    }
+    .history-entry {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 20px;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .digit-feedback-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .digit-card {
+      text-align: center;
+      min-width: 60px;
+      background: #11161f;
+      border-radius: 16px;
+      padding: 12px 0;
+      font-weight: 800;
+      font-size: 24px;
+      position: relative;
+    }
+    .digit-card div {
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+    .correct-digit { background: #1e4a3a; color: #86efac; box-shadow: 0 0 6px #4ade8055; }
+    .wrongpos-digit { background: #6b4a1a; color: #ffde9e; }
+    .absent-digit { background: #2a2a3a; color: #9ca3af; }
+
+    .score-board {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .score-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--secondary);
+    }
+
+    .toast-welcome {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a2537ee;
+      backdrop-filter: blur(12px);
+      padding: 12px 24px;
+      border-radius: 60px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid var(--primary);
+      z-index: 2000;
+      animation: fadeUp 0.3s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: 90vw;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.3;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; bottom: 0; }
+      to { opacity: 1; bottom: 24px; }
+    }
+    
+    .tips-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 18px 0;
+    }
+    .tip-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tip-title { font-weight: 700; color: var(--secondary); margin-bottom: 6px; font-size: 16px; }
+    .tip-card p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    
+    .settings-panel {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 20px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+    
+    /* Scrollbar styling */
+    .history-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+    .history-scroll::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+    }
+    .history-scroll::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
+    
+    /* Better touch targets */
+    button, .diff-card, .icon-circle {
+      cursor: pointer;
+    }
+    
+    @media (max-width: 480px) {
+      .glass-card { padding: 18px; border-radius: 24px; }
+      h1 { font-size: 32px; }
+      h2 { font-size: 22px; }
+      button { padding: 14px 16px; font-size: 16px; }
+      .input-modern { padding: 14px; font-size: 19px; letter-spacing: 3px; }
+      .digit-card { min-width: 52px; font-size: 20px; padding: 10px 0; }
+      .digit-card div { font-size: 10px; }
+      .score-value { font-size: 28px; }
+      .icon-circle { width: 46px; height: 46px; }
+      .clue-panel { font-size: 14px; padding: 14px; }
+      .tip-title { font-size: 15px; }
+      .tip-card p { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- INTRO screen -->
+  <div id="intro" class="screen active">
+    <div class="glass-card">
+      <div class="welcome-hero">
+        <span class="badge-glow">✦ DECODE THE CIPHER ✦</span>
+        <h1>Digit Decoder</h1>
+        <p class="lead-text">🔓 Crack the hidden number using logic clues and deduction. Each level sharpens your mind!</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 24px 0 12px;">
+        <button class="btn-primary" id="startDecodingBtn">✨ Start Decoding</button>
+        <button class="btn-secondary" id="guideBtn">📘 Decoder's Guide</button>
+        <button class="btn-ghost" id="guestBtn">🎭 Play as Guest</button>
+      </div>
+      <p class="lead-text" style="font-size: 12px;">🔐 15 levels per difficulty • Track your best scores</p>
+    </div>
+  </div>
+
+  <!-- WELCOME screen -->
+  <div id="welcome" class="screen">
+    <div class="glass-card" style="text-align: center;">
+      <span class="badge-glow">⚡ Cipher Access</span>
+      <h2 style="margin: 12px 0 8px;">Enter Decoder Vault</h2>
+      <p style="margin-bottom: 20px; font-size: 14px;">Sign in to save your decoding progress</p>
+      <div class="flex-center" style="flex-direction: column;">
+        <button class="btn-primary" id="loginBtn">🔓 Login / Register</button>
+        <button class="btn-secondary" id="howBtn">📖 Learn to Decode</button>
+        <button class="btn-ghost" id="guestModeBtn">🎭 Guest Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN / REGISTER -->
+  <div id="login" class="screen">
+    <div class="glass-card">
+      <div class="flex-between"><h2>🎫 Cipher Vault</h2><button class="icon-circle" id="loginBackBtn">✕</button></div>
+      <input id="user" class="input-modern" placeholder="Username" autocomplete="off" style="margin: 16px 0 12px;">
+      <input id="pass" type="password" class="input-modern" placeholder="Password">
+      <p id="msg" style="color: var(--error); font-size: 13px; margin: 12px 0;"></p>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+        <button class="btn-primary" id="doLoginBtn">Unlock Vault</button>
+        <button class="btn-secondary" id="doRegisterBtn">Create Cipher ID</button>
+        <button class="btn-ghost" id="loginGuestBtn">Guest Mode</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU main hub -->
+  <div id="menu" class="screen">
+    <div class="glass-card">
+      <div class="flex-between">
+        <h3 style="font-size: 20px;">🔐 Digit Decoder</h3>
+        <div class="flex-center" style="gap: 8px;"><span id="welcomeUser" class="badge-glow" style="font-size: 12px;">Guest</span><div id="avatar" style="background: #2d3a5e; width: 42px; height:42px; border-radius: 60px; display: flex; align-items:center; justify-content:center; font-weight:700; font-size: 18px;">👤</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+        <button class="btn-primary" id="decodeNewBtn">🔎 Decode New Cipher</button>
+        <button class="btn-secondary" id="menuGuideBtn">📘 Decoder's Guide</button>
+        <button class="btn-secondary" id="scoreboardBtn">🏆 Decoder Scoreboard</button>
+        <button class="btn-secondary" id="tipsBtn">💡 Decoding Tips</button>
+        <button class="btn-secondary" id="settingsBtn">⚙️ Settings</button>
+        <button class="btn-ghost" id="logoutBtn">🚪 Exit Vault</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="settings" class="screen">
+    <div class="glass-card">
+      <div class="flex-between"><h2>⚙️ Settings</h2><button class="icon-circle" id="settingsBackBtn">✕</button></div>
+      <div class="settings-panel">
+        <p style="margin-bottom: 12px; font-size: 14px;">✏️ Change your decoder name (scores stay)</p>
+        <input id="newNickname" class="input-modern" placeholder="New nickname" style="padding: 14px;">
+        <div class="flex-center" style="margin-top: 14px;">
+          <button class="btn-primary" id="updateNameBtn" style="flex:1;">Update</button>
+          <button class="btn-secondary" id="settingsCancelBtn" style="flex:1;">Cancel</button>
+        </div>
+        <p id="settingsMsg" style="margin-top: 12px; font-size: 13px; color: var(--secondary);"></p>
+      </div>
+      <div class="settings-panel">
+        <div class="toggle-switch">
+          <span style="font-size: 15px;">✨ Celebration Effects</span>
+          <button id="toggleEffectsBtn" class="btn-secondary" style="padding: 8px 20px; width: auto; border-radius: 40px;">ON</button>
+        </div>
+      </div>
+      <div class="settings-panel">
+        <button class="btn-secondary" id="resetProgressBtn" style="width:100%">🔄 Reset My Progress</button>
+        <p class="lead-text" style="font-size: 11px; margin-top: 10px;">Reset all levels and scores (keeps account)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CIPHER TIPS LIBRARY -->
+  <div id="library" class="screen">
+    <div class="glass-card">
+      <div class="flex-between"><h2>💡 Decoding Tips</h2><button class="icon-circle" id="libraryBackBtn">✕</button></div>
+      <div class="tips-grid">
+        <div class="tip-card"><div class="tip-title">🎯 Use the Clues First</div><p>Sum, even count, first+last total — these eliminate many possibilities.</p></div>
+        <div class="tip-card"><div class="tip-title">🔢 Color Code Meaning</div><p>🟢 GREEN = correct digit & position. 🟡 YELLOW = digit exists elsewhere. ⚫ GRAY = not in code.</p></div>
+        <div class="tip-card"><div class="tip-title">🧠 Elimination Strategy</div><p>Gray digits are gone forever. Yellow digits need to move to new spots.</p></div>
+        <div class="tip-card"><div class="tip-title">📊 Smart First Guess</div><p>Try "1 2 3" or "0 1 2" to quickly discover which digits appear.</p></div>
+        <div class="tip-card"><div class="tip-title">⚡ Sum Clue Hack</div><p>Small sum = low digits (0-4). Large sum = includes 7-9.</p></div>
+        <div class="tip-card"><div class="tip-title">🏆 15 Levels</div><p>Complete all 15 levels in each difficulty to become a Master Decoder!</p></div>
+      </div>
+      <button class="btn-secondary" id="libraryBackToHubBtn">Back to Hub</button>
+    </div>
+  </div>
+
+  <!-- CATEGORY with progress bars -->
+  <div id="category" class="screen">
+    <div class="glass-card">
+      <div class="flex-between"><h2>⚙️ Select Difficulty</h2><button class="icon-circle" id="categoryBackBtn">←</button></div>
+      <p class="lead-text" style="font-size: 12px;">15 encrypted levels. Your progress shown below.</p>
+      <div class="diff-grid">
+        <div class="diff-card" data-diff="easy"><div class="diff-icon">🟢</div><h3>Easy Cipher</h3><p>3 digits</p><div class="level-progress"><div id="easyProgressBar" class="level-progress-bar" style="width: 0%"></div></div><div id="easyProgressText" class="level-text">Level 0 / 15 • Score: 0</div></div>
+        <div class="diff-card" data-diff="medium"><div class="diff-icon">🟡</div><h3>Medium Cipher</h3><p>4 digits</p><div class="level-progress"><div id="mediumProgressBar" class="level-progress-bar" style="width: 0%"></div></div><div id="mediumProgressText" class="level-text">Level 0 / 15 • Score: 0</div></div>
+        <div class="diff-card" data-diff="hard"><div class="diff-icon">🔴</div><h3>Hard Cipher</h3><p>5 digits</p><div class="level-progress"><div id="hardProgressBar" class="level-progress-bar" style="width: 0%"></div></div><div id="hardProgressText" class="level-text">Level 0 / 15 • Score: 0</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game" class="screen">
+    <div class="glass-card">
+      <div class="flex-between">
+        <button class="icon-circle" id="gameBackBtn">←</button>
+        <div><span class="badge-glow" id="catLabel">EASY</span></div>
+        <button class="icon-circle" id="gameMenuBtn">☰</button>
+      </div>
+      <h2 id="levelTitle" style="text-align: center; margin: 10px 0; font-size: 18px;"></h2>
+      <div id="clueBox" class="clue-panel"></div>
+      <input id="guess" class="input-modern" type="tel" inputmode="numeric" placeholder="Enter digits" autocomplete="off">
+      <div class="flex-center" style="margin: 16px 0 12px;">
+        <button class="btn-primary" id="submitGuessBtn" style="flex: 2;">✓ Decode</button>
+        <button class="btn-secondary" id="prevLevelBtn" style="flex: 1;">◀ Prev</button>
+      </div>
+      <p id="result" style="text-align: center; min-height: 44px; font-size: 14px; font-weight: 500;"></p>
+      <div>
+        <h4>📋 Decoding History</h4>
+        <div id="historyList" class="history-scroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY -->
+  <div id="how" class="screen">
+    <div class="glass-card">
+      <h2>📖 How to Decode</h2>
+      <ul style="margin: 16px 0 16px 20px; line-height: 1.6; font-size: 14px; color: #b9c3dd;">
+        <li>🎯 Each cipher = secret number with <strong>unique digits</strong></li>
+        <li>🔎 Clues: sum, even/odd count, first+last total</li>
+        <li>🎨 Feedback: <span style="color:#86efac;">Green</span> = correct spot, <span style="color:#ffde9e;">Yellow</span> = wrong spot, <span style="color:#9ca3af;">Gray</span> = not in code</li>
+        <li>🏅 Solve level → +10 points → unlock next</li>
+        <li>📈 15 levels per difficulty — become a Master Decoder!</li>
+      </ul>
+      <button class="btn-primary" id="howBackBtn">Start Decoding →</button>
+    </div>
+  </div>
+
+  <!-- SCOREBOARD -->
+  <div id="score" class="screen">
+    <div class="glass-card">
+      <div class="flex-between"><h2>🏆 Decoder Scoreboard</h2><button class="icon-circle" id="scoreBackBtn">✕</button></div>
+      <div id="scoreBox" class="score-board"></div>
+      <div style="background: rgba(79, 209, 201, 0.12); border-radius: 20px; padding: 14px; margin-top: 12px; text-align: center;">
+        <span class="badge-glow">💡 Tip</span>
+        <p class="lead-text" style="font-size: 12px; margin-top: 8px;">Complete all 15 levels in a difficulty to max your score! Higher levels = bigger challenge.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // STATE - robust implementation
+  let accounts = {};
+  let displayNames = {};
+  let userData = {};
+  let currentUser = "";
+  let currentCategory = "";
+  let levelIndex = 0;
+  let progress = { easy: 0, medium: 0, hard: 0 };
+  let highScores = { easy: 0, medium: 0, hard: 0 };
+  let sessionPoints = 0;
+  let answers = {};
+  let clues = {};
+  let usedGuesses = [];
+  const MAX_LEVELS = 15;
+  let effectsEnabled = true;
+
+  function defaultUserState() {
+    return {
+      progress: { easy: 0, medium: 0, hard: 0 },
+      highScores: { easy: 0, medium: 0, hard: 0 },
+      answers: {},
+      clues: {}
+    };
+  }
+
+  function ensureUserData(username) {
+    if(!userData[username]) userData[username] = defaultUserState();
+    return userData[username];
+  }
+
+  function loadUserData(username) {
+    const data = ensureUserData(username);
+    progress = { ...defaultUserState().progress, ...data.progress };
+    highScores = { ...defaultUserState().highScores, ...data.highScores };
+    answers = { ...data.answers };
+    clues = { ...data.clues };
+    sessionPoints = 0;
+  }
+
+  function saveUserData(username) {
+    if(!username || username === "Guest") return;
+    userData[username] = {
+      progress: { ...progress },
+      highScores: { ...highScores },
+      answers: { ...answers },
+      clues: { ...clues }
+    };
+  }
+
+  function loadStorage() {
+    try {
+      if(localStorage.getItem('dd_accounts')) accounts = JSON.parse(localStorage.getItem('dd_accounts'));
+      if(localStorage.getItem('dd_displayNames')) displayNames = JSON.parse(localStorage.getItem('dd_displayNames'));
+      if(localStorage.getItem('dd_userData')) userData = JSON.parse(localStorage.getItem('dd_userData'));
+      if(localStorage.getItem('dd_currentUser')) currentUser = localStorage.getItem('dd_currentUser');
+      if(localStorage.getItem('dd_effects') !== null) effectsEnabled = JSON.parse(localStorage.getItem('dd_effects'));
+      if(currentUser && currentUser !== "Guest") loadUserData(currentUser);
+      else if(currentUser === "Guest") { progress = { easy: 0, medium: 0, hard: 0 }; highScores = { easy: 0, medium: 0, hard: 0 }; answers = {}; clues = {}; }
+    } catch(e) { console.warn(e); }
+  }
+
+  function saveStorage() {
+    try {
+      if(currentUser && currentUser !== "Guest") saveUserData(currentUser);
+      localStorage.setItem('dd_accounts', JSON.stringify(accounts));
+      localStorage.setItem('dd_displayNames', JSON.stringify(displayNames));
+      localStorage.setItem('dd_userData', JSON.stringify(userData));
+      localStorage.setItem('dd_currentUser', currentUser || '');
+      localStorage.setItem('dd_effects', JSON.stringify(effectsEnabled));
+    } catch(e) {}
+  }
+
+  function getDisplayName(username) {
+    if (displayNames[username]) return displayNames[username];
+    return username;
+  }
+
+  function updateUserUI() {
+    const welcomeSpan = document.getElementById('welcomeUser');
+    const avatarDiv = document.getElementById('avatar');
+    if(currentUser && currentUser !== "Guest") {
+      let displayName = getDisplayName(currentUser);
+      if(welcomeSpan) welcomeSpan.innerText = `${displayName}`;
+      if(avatarDiv) avatarDiv.innerHTML = displayName.charAt(0).toUpperCase();
+    } else if(currentUser === "Guest") {
+      if(welcomeSpan) welcomeSpan.innerText = "Guest";
+      if(avatarDiv) avatarDiv.innerHTML = "👤";
+    } else {
+      if(welcomeSpan) welcomeSpan.innerText = "Guest";
+      if(avatarDiv) avatarDiv.innerHTML = "👤";
+    }
+  }
+
+  function updateProgressBars() {
+    ['easy', 'medium', 'hard'].forEach(cat => {
+      const bar = document.getElementById(`${cat}ProgressBar`);
+      const text = document.getElementById(`${cat}ProgressText`);
+      if(bar) bar.style.width = `${(progress[cat] / MAX_LEVELS) * 100}%`;
+      if(text) text.innerText = `Level ${progress[cat]} / ${MAX_LEVELS} • Score: ${highScores[cat]}`;
+    });
+  }
+
+  function showToast(msg) {
+    let toast = document.createElement('div');
+    toast.className = 'toast-welcome';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(()=> toast.remove(), 2500);
+  }
+
+  function changeNickname() {
+    let newName = document.getElementById('newNickname').value.trim();
+    let msgDiv = document.getElementById('settingsMsg');
+    if(!currentUser || currentUser === "Guest") {
+      msgDiv.innerText = "❌ Guests can't change name. Register!";
+      return;
+    }
+    if(!newName) { msgDiv.innerText = "❌ Enter a nickname"; return; }
+    if(newName.length > 20) { msgDiv.innerText = "❌ Too long"; return; }
+    displayNames[currentUser] = newName;
+    saveStorage();
+    updateUserUI();
+    msgDiv.innerText = `✅ Nickname updated to "${newName}"! Scores unchanged.`;
+    setTimeout(()=> { if(msgDiv) msgDiv.innerText = ""; }, 2500);
+  }
+
+  function resetLocalProgress() {
+    if(confirm("⚠️ Reset ALL your levels and scores? This cannot be undone.")) {
+      progress = { easy: 0, medium: 0, hard: 0 };
+      highScores = { easy: 0, medium: 0, hard: 0 };
+      answers = {};
+      clues = {};
+      sessionPoints = 0;
+      saveStorage();
+      updateProgressBars();
+      showToast("Progress reset successfully!");
+    }
+  }
+
+  function toggleEffects() {
+    effectsEnabled = !effectsEnabled;
+    saveStorage();
+    const btn = document.getElementById('toggleEffectsBtn');
+    if(btn) btn.innerText = effectsEnabled ? "ON" : "OFF";
+  }
+
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    if(target) target.classList.add('active');
+    if(id === 'category') updateProgressBars();
+    if(id === 'game') setTimeout(()=> document.getElementById('guess')?.focus(), 200);
+    if(id === 'settings') {
+      document.getElementById('newNickname').value = getDisplayName(currentUser || "Guest");
+      const btn = document.getElementById('toggleEffectsBtn');
+      if(btn) btn.innerText = effectsEnabled ? "ON" : "OFF";
+    }
+    if(id === 'score') showScore();
+  }
+
+  function rand(max) { return Math.floor(Math.random() * max); }
+  function generateUniqueNumber(len) {
+    let digits = [];
+    while(digits.length < len) {
+      let d = rand(10).toString();
+      if(digits.length === 0 && d === "0") continue;
+      if(!digits.includes(d)) digits.push(d);
+    }
+    return digits.join("");
+  }
+
+  function buildClues(num) {
+    let digits = num.split("").map(Number);
+    let sum = digits.reduce((a,b)=>a+b,0);
+    let even = digits.filter(d=>d%2===0).length;
+    let odd = digits.length - even;
+    let first = digits[0];
+    let last = digits[digits.length-1];
+    return [`🔢 Digit sum = ${sum}`, `⚖️ Even: ${even} | Odd: ${odd}`, `🎯 First digit is ${first%2===0 ? "even" : "odd"}`, `🏁 Last digit is ${last%2===0 ? "even" : "odd"}`, `➕ First + Last = ${first + last}`, `✨ All digits unique`];
+  }
+
+  function startGame(cat) {
+    currentCategory = cat;
+    if(progress[cat] >= MAX_LEVELS) { showToast("🎉 You've mastered all 15 levels!"); setTimeout(()=> show('category'), 1200); return; }
+    levelIndex = progress[cat];
+    answers[cat] = answers[cat] || [];
+    clues[cat] = clues[cat] || [];
+    if(!answers[cat][levelIndex]) {
+      let len = cat === "easy" ? 3 : cat === "medium" ? 4 : 5;
+      let newNum = generateUniqueNumber(len);
+      answers[cat][levelIndex] = newNum;
+      clues[cat][levelIndex] = buildClues(newNum);
+    }
+    loadLevel();
+    show('game');
+    saveStorage();
+  }
+
+  function loadLevel() {
+    let ans = answers[currentCategory][levelIndex];
+    document.getElementById('levelTitle').innerHTML = `${currentCategory.toUpperCase()} • Level ${levelIndex+1}/${MAX_LEVELS}`;
+    document.getElementById('catLabel').innerText = currentCategory.toUpperCase();
+    document.getElementById('clueBox').innerHTML = clues[currentCategory][levelIndex].map(c => `🔍 ${c}`).join('<br>');
+    let inputField = document.getElementById('guess');
+    inputField.value = "";
+    inputField.maxLength = ans.length;
+    inputField.placeholder = `Enter ${ans.length} unique digits`;
+    document.getElementById('result').innerHTML = "";
+    usedGuesses = [];
+    document.getElementById('historyList').innerHTML = "";
+    document.getElementById('prevLevelBtn').disabled = levelIndex <= 0;
+  }
+
+  function addHistoryRow(guess, feedbackArr) {
+    let container = document.getElementById('historyList');
+    let row = document.createElement('div');
+    row.className = 'history-entry';
+    let flexDiv = document.createElement('div');
+    flexDiv.className = 'digit-feedback-group';
+    for(let i = 0; i < guess.length; i++) {
+      let digitTile = document.createElement('div');
+      digitTile.className = 'digit-card';
+      digitTile.textContent = guess[i];
+      let sub = document.createElement('div');
+      sub.textContent = feedbackArr[i] === 2 ? '✓' : (feedbackArr[i] === 1 ? '↻' : '✗');
+      if(feedbackArr[i] === 2) digitTile.classList.add('correct-digit');
+      else if(feedbackArr[i] === 1) digitTile.classList.add('wrongpos-digit');
+      else digitTile.classList.add('absent-digit');
+      digitTile.appendChild(sub);
+      flexDiv.appendChild(digitTile);
+    }
+    row.appendChild(flexDiv);
+    container.prepend(row);
+  }
+
+  function submitGuess() {
+    let guessVal = document.getElementById('guess').value.trim();
+    let ans = answers[currentCategory][levelIndex];
+    let len = ans.length;
+    if(!/^\d+$/.test(guessVal)) { showMsg("Digits only 0-9", false); return; }
+    if(guessVal.length !== len) { showMsg(`Enter ${len} digits`, false); return; }
+    if(new Set(guessVal.split('')).size !== len) { showMsg("Digits must be unique", false); return; }
+    if(usedGuesses.includes(guessVal)) { showMsg("Already guessed", false); return; }
+    usedGuesses.push(guessVal);
+    let ansArr = ans.split('');
+    let gArr = guessVal.split('');
+    let feedback = Array(len).fill(0);
+    let usedMark = Array(len).fill(false);
+    for(let i=0;i<len;i++) if(gArr[i]===ansArr[i]) { feedback[i]=2; usedMark[i]=true; }
+    for(let i=0;i<len;i++) {
+      if(feedback[i]===2) continue;
+      for(let j=0;j<len;j++) {
+        if(!usedMark[j] && gArr[i]===ansArr[j]) { feedback[i]=1; usedMark[j]=true; break; }
+      }
+    }
+    addHistoryRow(guessVal, feedback);
+    if(feedback.every(f=> f===2)) {
+      sessionPoints += 10;
+      if(sessionPoints > highScores[currentCategory]) highScores[currentCategory] = sessionPoints;
+      progress[currentCategory]++;
+      showMsg("🎉 CIPHER CRACKED! +10 points!", true);
+      if(effectsEnabled) launchConfetti();
+      saveStorage();
+      setTimeout(() => startGame(currentCategory), 800);
+    } else {
+      showMsg("❌ Incorrect — check the colors", false);
+    }
+  }
+
+  function prevLevel() {
+    if(levelIndex > 0) {
+      levelIndex--;
+      progress[currentCategory]--;
+      loadLevel();
+      saveStorage();
+    }
+  }
+
+  function showMsg(msg, isSuccess) {
+    let resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = msg;
+    resultDiv.style.color = isSuccess ? '#bef264' : '#ffb3a1';
+    setTimeout(()=> { if(resultDiv) resultDiv.style.color = ''; }, 1500);
+  }
+
+  function launchConfetti() {
+    for(let i=0;i<25;i++) {
+      let particle = document.createElement('div');
+      particle.style.position = 'fixed';
+      particle.style.width = (6+Math.random()*8)+'px';
+      particle.style.height = (6+Math.random()*8)+'px';
+      particle.style.background = `hsl(${Math.random()*360}, 80%, 65%)`;
+      particle.style.left = (10+Math.random()*80)+'%';
+      particle.style.top = '40%';
+      particle.style.borderRadius = '4px';
+      particle.style.pointerEvents = 'none';
+      particle.style.zIndex = 9999;
+      document.body.appendChild(particle);
+      let dx = (Math.random()*120-60);
+      let dy = (Math.random()*140+60);
+      particle.animate([{ transform: 'translate(0,0)', opacity:1 },{ transform: `translate(${dx}px, ${dy}px) rotate(360deg)`, opacity:0 }],{ duration: 700 });
+      setTimeout(()=>particle.remove(), 750);
+    }
+  }
+
+  function showScore() {
+    let scoreContainer = document.getElementById('scoreBox');
+    if(scoreContainer) {
+      scoreContainer.innerHTML = '';
+      let cats = ['easy', 'medium', 'hard'];
+      let total = 0;
+      cats.forEach(c => {
+        total += highScores[c];
+        let row = document.createElement('div');
+        row.className = 'score-item';
+        row.innerHTML = `<strong style="font-size:16px;">${c.toUpperCase()}</strong> <span class="score-value">${highScores[c]} pts</span> <span class="badge-glow" style="font-size:11px;">lv.${progress[c]}/${MAX_LEVELS}</span>`;
+        scoreContainer.appendChild(row);
+      });
+      let totalRow = document.createElement('div');
+      totalRow.className = 'score-item';
+      totalRow.style.borderBottom = 'none';
+      totalRow.style.marginTop = '8px';
+      totalRow.innerHTML = `<strong style="font-size:18px;">TOTAL SCORE</strong> <span class="score-value">${total}</span>`;
+      scoreContainer.appendChild(totalRow);
+    }
+  }
+
+  // Auth
+  function login() {
+    let u = document.getElementById('user').value.trim();
+    let p = document.getElementById('pass').value;
+    if(accounts[u] && accounts[u] === p) {
+      currentUser = u;
+      loadUserData(u);
+      saveStorage();
+      updateUserUI();
+      updateProgressBars();
+      showToast(`Welcome back, ${getDisplayName(u)}!`);
+      show('menu');
+      document.getElementById('msg').innerHTML = '';
+    } else { document.getElementById('msg').innerHTML = "Invalid credentials"; }
+  }
+  function register() {
+    let u = document.getElementById('user').value.trim();
+    let p = document.getElementById('pass').value;
+    if(!u || !p) { document.getElementById('msg').innerHTML = "Fill all fields"; return; }
+    if(accounts[u]) { document.getElementById('msg').innerHTML = "User exists"; return; }
+    accounts[u] = p;
+    currentUser = u;
+    loadUserData(u);
+    saveStorage();
+    updateUserUI();
+    updateProgressBars();
+    showToast(`Welcome, ${u}! Start decoding!`);
+    show('menu');
+  }
+  function logout() { if(currentUser && currentUser !== "Guest") saveUserData(currentUser); currentUser = ""; sessionPoints = 0; saveStorage(); updateUserUI(); show('welcome'); }
+  function back() { if(currentUser) show('menu'); else show('welcome'); }
+  function proceedToWelcome() { show('welcome'); }
+  function startGuest() { currentUser = "Guest"; loadUserData("Guest"); saveStorage(); updateUserUI(); updateProgressBars(); showToast("Guest mode active — progress saved locally!"); show('menu'); }
+
+  function setupEventListeners() {
+    const ids = ['startDecodingBtn','guideBtn','guestBtn','loginBtn','howBtn','guestModeBtn','loginBackBtn','doLoginBtn','doRegisterBtn','loginGuestBtn','decodeNewBtn','menuGuideBtn','scoreboardBtn','tipsBtn','settingsBtn','logoutBtn','settingsBackBtn','updateNameBtn','settingsCancelBtn','toggleEffectsBtn','resetProgressBtn','libraryBackBtn','libraryBackToHubBtn','categoryBackBtn','gameBackBtn','gameMenuBtn','submitGuessBtn','prevLevelBtn','howBackBtn','scoreBackBtn'];
+    const actions = { startDecodingBtn:()=>proceedToWelcome(), guideBtn:()=>show('how'), guestBtn:()=>startGuest(), loginBtn:()=>show('login'), howBtn:()=>show('how'), guestModeBtn:()=>startGuest(), loginBackBtn:()=>show('welcome'), doLoginBtn:()=>login(), doRegisterBtn:()=>register(), loginGuestBtn:()=>startGuest(), decodeNewBtn:()=>show('category'), menuGuideBtn:()=>show('how'), scoreboardBtn:()=>show('score'), tipsBtn:()=>show('library'), settingsBtn:()=>show('settings'), logoutBtn:()=>logout(), settingsBackBtn:()=>back(), updateNameBtn:()=>changeNickname(), settingsCancelBtn:()=>back(), toggleEffectsBtn:()=>toggleEffects(), resetProgressBtn:()=>resetLocalProgress(), libraryBackBtn:()=>back(), libraryBackToHubBtn:()=>back(), categoryBackBtn:()=>show('menu'), gameBackBtn:()=>show('category'), gameMenuBtn:()=>show('menu'), submitGuessBtn:()=>submitGuess(), prevLevelBtn:()=>prevLevel(), howBackBtn:()=>back(), scoreBackBtn:()=>back() };
+    for(let [id, fn] of Object.entries(actions)) { document.getElementById(id)?.addEventListener('click', fn); }
+    document.querySelectorAll('.diff-card').forEach(card => { card.addEventListener('click', (e) => { const diff = card.getAttribute('data-diff'); if(diff) startGame(diff); }); });
+  }
+
+  loadStorage();
+  updateUserUI();
+  updateProgressBars();
+  setupEventListeners();
+  if(currentUser && currentUser !== "Guest") setTimeout(()=> show('menu'), 20);
+</script>
+</body>
+</html>
